@@ -1,0 +1,7 @@
+.venv/
+.env
+data/
+*.db
+pki/*.key
+pki/private/
+__pycache__/
