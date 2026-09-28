@@ -1,0 +1,5 @@
+KEY_ID                               | PURPOSE    | ALGORITHM    | STATE   | CREATED_AT
+-------------------------------------------------------------------------------------
+fa2651d1-e0bd-4180-8122-1a239eb3fd16 | encryption | AES-256-GCM  | active  | 2026-09-28T13:06:06
+f7584195-6d40-4a6d-b758-b112134a7401 | signing    | Ed25519      | active  | 2026-09-28T13:06:06
+45ad1d72-2b6c-469d-a513-855539047c80 | hmac       | HMAC-SHA256  | active  | 2026-09-28T13:06:06

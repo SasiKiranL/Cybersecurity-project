@@ -1,0 +1,18 @@
+=== ROOT CA CERTIFICATE ===
+Subject: CN=CampusVault Root CA,O=CampusVault Security,C=US
+Issuer: CN=CampusVault Root CA,O=CampusVault Security,C=US
+Serial: 371388001634002969937590861419505184715484315780
+Not Before: 2026-09-27 13:03:44+00:00
+Not After: 2036-09-25 13:03:44+00:00
+
+=== SERVER CERTIFICATE ===
+Subject: CN=localhost,O=CampusVault Security,C=US
+Issuer: CN=CampusVault Root CA,O=CampusVault Security,C=US
+Not Before: 2026-09-27 13:03:44+00:00
+Not After: 2027-09-28 13:03:44+00:00
+
+=== CLIENT mTLS CERTIFICATE ===
+Subject: CN=sensor-simulator-01,O=CampusVault IoT,C=US
+Issuer: CN=CampusVault Root CA,O=CampusVault Security,C=US
+Not Before: 2026-09-27 13:03:44+00:00
+Not After: 2027-09-28 13:03:44+00:00

@@ -1,0 +1,8 @@
+[STRIDE THREAT-CONTROL-TEST TRACEABILITY MATRIX]
+T1 (Spoofing):             Argon2id + Lockout      -> test_01_password.py, test_09_stride.py
+T2 (Tampering):            Canonical HMAC-SHA256   -> test_06_hmac_api.py, test_09_stride.py
+T3 (Repudiation):          Ed25519 Signatures      -> test_03_signatures.py, test_09_stride.py
+T4 (Information Disclosure): AES-256-GCM Envelope  -> test_02_encryption.py, test_09_stride.py
+T5 (Denial of Service):    Sliding Rate Limiter    -> test_06_hmac_api.py, test_09_stride.py
+T6 (Elevation of Privilege): Server-side RBAC      -> test_05_rbac.py, test_09_stride.py
+T7 (Tampering):            Hash-Chained Audit Log  -> test_07_audit_log.py, test_09_stride.py

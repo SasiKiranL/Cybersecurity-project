@@ -1,0 +1,10 @@
+Successfully encrypted 'requirements.txt' to 'data\test_req.enc' (1702 bytes).
+
+VaultCTL Archive Inspection:
+  Header Magic:      VAULT1
+  Salt (hex):        4c45ee4058bb1d3854441eaefa8d02b41647a1496a1573f6f696cdf7d0853846
+  Nonce (hex):       d8cf73dadadd5a3142bc8185
+  Ciphertext size:   1652 bytes
+  Total file size:   1702 bytes
+
+Successfully decrypted 'data\test_req.enc' to 'data\test_req.dec' (1636 bytes).

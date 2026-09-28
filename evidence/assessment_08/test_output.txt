@@ -1,0 +1,15 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\SasiK\Documents\Cybersecurity project\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\SasiK\Documents\Cybersecurity project
+plugins: anyio-4.15.1, platformdirs-4.12.1
+collecting ... collected 5 items
+
+tests/test_08_key_mgmt.py::test_key_generation_and_storage_encrypted PASSED [ 20%]
+tests/test_08_key_mgmt.py::test_key_rotation PASSED                      [ 40%]
+tests/test_08_key_mgmt.py::test_key_revocation PASSED                    [ 60%]
+tests/test_08_key_mgmt.py::test_key_destruction PASSED                   [ 80%]
+tests/test_08_key_mgmt.py::test_key_backup_restore PASSED                [100%]
+
+============================== 5 passed in 0.46s ==============================
+

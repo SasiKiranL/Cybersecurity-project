@@ -1,0 +1,21 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\SasiK\Documents\Cybersecurity project\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\SasiK\Documents\Cybersecurity project
+plugins: anyio-4.15.1, platformdirs-4.12.1
+collecting ... collected 5 items
+
+tests/test_06_hmac_api.py::test_hmac_valid_request_accepted PASSED       [ 20%]
+tests/test_06_hmac_api.py::test_hmac_replay_attack_rejected PASSED       [ 40%]
+tests/test_06_hmac_api.py::test_hmac_timestamp_skew_rejected PASSED      [ 60%]
+tests/test_06_hmac_api.py::test_hmac_body_tampering_rejected PASSED      [ 80%]
+tests/test_06_hmac_api.py::test_rate_limiter_exceeded_triggers_429 PASSED [100%]
+
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  C:\Users\SasiK\Documents\Cybersecurity project\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+======================== 5 passed, 1 warning in 0.56s =========================
+

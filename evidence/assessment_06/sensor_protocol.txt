@@ -1,0 +1,12 @@
+[PROTOCOL SPECIFICATION]
+Method: POST
+Path: /api/v1/telemetry
+Headers:
+  X-Timestamp: ISO 8601 UTC
+  X-Nonce: UUIDv4
+  X-Signature: HMAC-SHA256(Method + Path + Timestamp + Nonce + SHA256(Body), Secret)
+Security Features:
+  1. Anti-Replay: Nonce cache verification
+  2. Anti-Skew: 300-second timestamp tolerance
+  3. Anti-Tamper: Constant-time comparison (hmac.compare_digest)
+  4. Rate-Limiting: Sliding window 10 req/min

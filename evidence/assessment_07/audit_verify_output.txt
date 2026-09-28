@@ -1,0 +1,4 @@
+[*] Verifying audit log integrity in 'data\campusvault.db'...
+[*] Found 10 total audit records in chain.
+[+] VERIFICATION SUCCESS: All cryptographic hashes and chain links are valid!
+[+] The audit log is completely tamper-free across all 10 records.

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Error — CampusVault{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 4rem auto; text-align: center;">
+    <div class="card">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🛡️</div>
+        <h2 class="card-title" style="margin-bottom: 0.5rem;">{{ title or "Access Error" }}</h2>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+            {{ message or "An error occurred while processing your request. Detailed diagnostics have been logged to the secure audit system." }}
+        </p>
+        <a href="/" class="btn btn-cyan">Return to Safety</a>
+    </div>
+</div>
+{% endblock %}

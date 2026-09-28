@@ -1,0 +1,5 @@
+ROLE     | GRANTED PERMISSIONS
+------------------------------------------------------------
+student  | ["marks:read_own", "documents:download"]
+faculty  | ["marks:read_own", "marks:read_assigned", "marks:write_assigned", "documents:download", "documents:upload", "readings:read"]
+admin    | ["marks:read_own", "marks:read_assigned", "marks:write_assigned", "documents:download", "documents:upload", "users:manage", "audit:read", "keys:manage", "readings:read"]

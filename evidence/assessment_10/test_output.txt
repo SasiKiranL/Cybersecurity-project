@@ -1,0 +1,15 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\SasiK\Documents\Cybersecurity project\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\SasiK\Documents\Cybersecurity project
+plugins: anyio-4.15.1, platformdirs-4.12.1
+collecting ... collected 5 items
+
+tests/test_10_sbom.py::test_sbom_files_exist_and_are_valid_cyclonedx_json PASSED [ 20%]
+tests/test_10_sbom.py::test_sbom_components_have_purls_and_metadata PASSED [ 40%]
+tests/test_10_sbom.py::test_sbom_traceability_to_requirements PASSED     [ 60%]
+tests/test_10_sbom.py::test_dependency_vulnerability_reports_exist PASSED [ 80%]
+tests/test_10_sbom.py::test_critical_packages_minimum_secure_versions PASSED [100%]
+
+============================== 5 passed in 0.26s ==============================
+

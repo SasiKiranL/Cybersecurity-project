@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+
+{% block title %}Faculty Portal — CampusVault{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1 style="font-size: 2rem; font-weight: 700;">Faculty Administration</h1>
+        <p style="color: var(--text-secondary); margin-top: 0.25rem;">Grade submissions and cryptographically signed syllabus distributions</p>
+    </div>
+    <div class="user-badge" style="padding: 0.6rem 1.2rem;">
+        <span>{{ user.username }}</span>
+        <span class="role-tag faculty">FACULTY</span>
+    </div>
+</div>
+
+{% if error %}
+    <div class="alert alert-error">{{ error }}</div>
+{% endif %}
+{% if message %}
+    <div class="alert alert-success">{{ message }}</div>
+{% endif %}
+
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Column 1: Enter Grade -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Enter Student Grade</h2>
+        </div>
+        <form action="/faculty/marks" method="POST">
+            <div class="form-group">
+                <label for="student_id">Select Student</label>
+                <select id="student_id" name="student_id" class="form-control" required>
+                    {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.username }} ({{ s.email }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="course_code">Course Code</label>
+                <input type="text" id="course_code" name="course_code" class="form-control" placeholder="e.g. CS304" required>
+            </div>
+            <div class="form-group">
+                <label for="course_name">Course Name</label>
+                <input type="text" id="course_name" name="course_name" class="form-control" placeholder="e.g. Cloud Security" required>
+            </div>
+            <div class="form-group">
+                <label for="score">Score (0-100)</label>
+                <input type="number" id="score" name="score" min="0" max="100" class="form-control" placeholder="95" required>
+            </div>
+            <div class="form-group">
+                <label for="semester">Semester</label>
+                <input type="text" id="semester" name="semester" class="form-control" value="Fall 2026" required>
+            </div>
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center;">
+                Submit Grade to Ledger
+            </button>
+        </form>
+    </div>
+
+    <!-- Column 2: Upload, Envelope Encrypt & Sign Document -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Upload & Sign Course Document</h2>
+        </div>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Files are automatically hashed (SHA-256), signed with faculty Ed25519 key, and envelope-encrypted under AES-256-GCM.
+        </p>
+        <form action="/faculty/documents" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Select File</label>
+                <input type="file" id="file" name="file" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center; margin-top: 1.5rem;">
+                Encrypt, Sign & Store
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Section: Recently Submitted Marks -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Course Marks Entered</h2>
+    </div>
+    <div class="table-responsive">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Student</th>
+                    <th>Course Code</th>
+                    <th>Course Name</th>
+                    <th>Score</th>
+                    <th>Semester</th>
+                    <th>Entered At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in marks %}
+                <tr>
+                    <td>{{ m.student_username }}</td>
+                    <td class="mono">{{ m.course_code }}</td>
+                    <td>{{ m.course_name }}</td>
+                    <td><strong style="color: var(--accent-emerald);">{{ m.score }}%</strong></td>
+                    <td>{{ m.semester }}</td>
+                    <td class="mono" style="font-size: 0.85rem; color: var(--text-secondary);">{{ m.entered_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,5 @@
+USERNAME        | MASKED_ARGON2ID_HASH            | ROLE    | FAILED_ATTEMPTS
+---------------------------------------------------------------------------
+alice_student   | $argon2id$v=19$m=65536,t=3,p... | student | 0
+bob_faculty     | $argon2id$v=19$m=65536,t=3,p... | faculty | 0
+carol_admin     | $argon2id$v=19$m=65536,t=3,p... | admin   | 0

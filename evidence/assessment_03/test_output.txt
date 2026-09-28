@@ -1,0 +1,15 @@
+============================= test session starts =============================
+platform win32 -- Python 3.14.7, pytest-9.1.1, pluggy-1.6.0 -- C:\Users\SasiK\Documents\Cybersecurity project\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: C:\Users\SasiK\Documents\Cybersecurity project
+plugins: anyio-4.15.1, platformdirs-4.12.1
+collecting ... collected 5 items
+
+tests/test_03_signatures.py::test_signature_generation_and_verification PASSED [ 20%]
+tests/test_03_signatures.py::test_signature_tamper_detection PASSED      [ 40%]
+tests/test_03_signatures.py::test_signature_key_binding PASSED           [ 60%]
+tests/test_03_signatures.py::test_detached_signature_save_load PASSED    [ 80%]
+tests/test_03_signatures.py::test_signature_verification_on_retired_key PASSED [100%]
+
+============================== 5 passed in 0.40s ==============================
+

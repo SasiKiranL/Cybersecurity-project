@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}Account Recovery — CampusVault{% endblock %}
+
+{% block content %}
+<div style="max-width: 500px; margin: 2rem auto;">
+    <div class="card">
+        <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 0.5rem;">
+            <h2 class="card-title">Password Recovery</h2>
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">Time-limited cryptographic token reset</p>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-error">{{ error }}</div>
+        {% endif %}
+        {% if recovery_token %}
+            <div class="alert alert-success" style="flex-direction: column; align-items: flex-start;">
+                <strong>Recovery Token Generated:</strong>
+                <div class="mono" style="word-break: break-all; background: rgba(0,0,0,0.3); padding: 0.5rem; border-radius: 4px; margin-top: 0.5rem; font-size: 0.85rem;">
+                    {{ recovery_token }}
+                </div>
+                <small style="margin-top: 0.5rem; color: #a7f3d0;">(In demo mode, copy this token into Step 2 below. Token expires in 1 hour.)</small>
+            </div>
+        {% endif %}
+
+        {% if not recovery_token %}
+        <!-- Step 1: Request Token -->
+        <form action="/recover" method="POST">
+            <input type="hidden" name="step" value="request">
+            <div class="form-group">
+                <label for="email">Institutional Email</label>
+                <input type="email" id="email" name="email" class="form-control" required placeholder="name@campus.local">
+            </div>
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center;">
+                Generate Recovery Token
+            </button>
+        </form>
+        {% else %}
+        <!-- Step 2: Redeem Token -->
+        <form action="/recover" method="POST">
+            <input type="hidden" name="step" value="redeem">
+            <div class="form-group">
+                <label for="token">Recovery Token</label>
+                <input type="text" id="token" name="token" class="form-control mono" value="{{ recovery_token }}" required>
+            </div>
+            <div class="form-group">
+                <label for="new_password">New Password</label>
+                <input type="password" id="new_password" name="new_password" class="form-control" required placeholder="At least 12 characters">
+            </div>
+            <button type="submit" class="btn btn-cyan" style="width: 100%; justify-content: center;">
+                Reset Password & Unlock
+            </button>
+        </form>
+        {% endif %}
+
+        <div style="margin-top: 1.5rem; text-align: center; font-size: 0.9rem;">
+            <a href="/login" style="color: var(--text-secondary); text-decoration: none;">&larr; Back to Login</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
