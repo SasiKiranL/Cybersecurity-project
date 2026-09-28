@@ -54,12 +54,12 @@ Initialize the SQLite database, seed master cryptographic keys, synthetic users,
 python scripts/seed_data.py
 ```
 
-### 5. Run the Automated Test Suite (All 10 Assessments)
-Run all 51 test cases across the entire project:
+### 5. Run the Automated Test Suite (All Assessments + Security Features)
+Run all 57 test cases across the entire project:
 ```powershell
 pytest -v
 ```
-*(Expected: **51 passed** in ~5 seconds)*
+*(Expected: **57 passed** in ~6 seconds)*
 
 ---
 
@@ -126,7 +126,20 @@ python scripts/verify_audit.py
 ```
 *(Walks the SHA-256 hash chain from genesis to verify link continuity)*
 
-### 3. Software Supply Chain Auditing (Assessment 10)
+### 3. Cryptographic File Integrity Monitor (FIM)
+Continuously verify the integrity of critical application code, PKI certificates, and environment configuration against SHA-256 cryptographic baselines:
+
+**Establish or refresh baseline:**
+```powershell
+python scripts/run_fim.py --init
+```
+
+**Verify filesystem against baseline:**
+```powershell
+python scripts/run_fim.py --check
+```
+
+### 4. Software Supply Chain Auditing (Assessment 10)
 Generate an authoritative CycloneDX SBOM:
 ```powershell
 python -m cyclonedx_py requirements requirements.txt -o sbom/sbom_after.json --of JSON
@@ -158,24 +171,28 @@ CampusVault/
 │   ├── config.py               # Pydantic settings & secret loading
 │   ├── database.py             # SQLite WAL database & schema manager
 │   ├── encryption.py           # Assessment 2: Envelope encryption (AES-256-GCM)
+│   ├── file_security.py        # Magic-byte inspection, path traversal sanitization, size limits
 │   ├── models.py               # Schemas & data structures
 │   ├── rbac.py                 # Assessment 5: Role-based access control dependencies
-│   ├── routes_admin.py         # Admin panel & key rotation routes
-│   ├── routes_auth.py          # Login, registration, password recovery routes
-│   ├── routes_faculty.py       # Grade entry & document signing routes
+│   ├── routes_admin.py         # Admin panel, FIM scanner, key lifecycle & signed audit export
+│   ├── routes_auth.py          # Login (IP rate limited), registration, sign out all devices
+│   ├── routes_faculty.py       # Grade entry & authenticated document signing
 │   ├── routes_student.py       # Grade viewer & signature-verified download routes
-│   ├── session.py              # Cryptographic session & CSRF management
+│   ├── session.py              # Cryptographic session & CSRF management (revocation, fixation defense)
 │   ├── signatures.py           # Assessment 3: Ed25519 digital signatures
 │   ├── main.py                 # Portal application assembly & security headers
 │   └── templates/              # Modern glassmorphism HTML templates
 │
 ├── audit/                      # Assessment 7: Tamper-Evident Audit Logging
-│   ├── logger.py               # Thread-safe hash-chained audit logger with scrubbing
+│   ├── fim.py                  # Continuous SHA-256 File Integrity Monitor
+│   ├── logger.py               # Thread-safe dual-sink audit logger (SQLite + JSONL) with scrubbing
 │   ├── models.py               # AuditEvent, EventType, genesis hash
-│   └── verifier.py             # Full chain integrity verifier
+│   └── verifier.py             # Full chain integrity verifier (DB and JSONL)
 │
 ├── data/                       # Local data storage (Git ignored)
 │   ├── campusvault.db          # Main SQLite database
+│   ├── audit_log.jsonl         # Append-only immutable JSONL audit ledger
+│   ├── fim_baseline.json       # SHA-256 cryptographic file baseline
 │   └── files/                  # Encrypted archives (.enc) & detached signatures (.sig)
 │
 ├── docs/                       # Project Documentation
@@ -207,25 +224,27 @@ CampusVault/
 ├── scripts/                    # Management & Verification Scripts
 │   ├── generate_evidence.py    # Generates all evidence folder artifacts
 │   ├── run_api.py              # Runs Sensor API on :8444 with mTLS
+│   ├── run_fim.py              # Cryptographic File Integrity Monitor CLI
 │   ├── run_portal.py           # Runs Web Portal on :8443 with TLS
 │   ├── seed_data.py            # Seeds database with synthetic users and keys
-│   └── verify_audit.py         # CLI audit chain verifier
+│   └── verify_audit.py         # CLI audit chain verifier (DB and JSONL)
 │
 ├── simulator/                  # Simulated IoT Sensor Node
 │   └── sensor_client.py        # Telemetry transmitter using mTLS + HMAC-SHA256
 │
-├── tests/                      # Automated Pytest Suite (51 Tests)
+├── tests/                      # Automated Pytest Suite (57 Tests)
 │   ├── conftest.py             # Shared fixtures (temp DB, key service, audit logger)
 │   ├── test_01_password.py     # Assessment 1 tests (5/5)
 │   ├── test_02_encryption.py   # Assessment 2 tests (5/5)
 │   ├── test_03_signatures.py   # Assessment 3 tests (5/5)
 │   ├── test_04_pki_mtls.py     # Assessment 4 tests (5/5)
-│   ├── test_05_rbac.py         # Assessment 5 tests (5/5)
+│   ├── test_05_rbac.py         # Assessment 5 tests (6/6, session fixation defense)
 │   ├── test_06_hmac_api.py     # Assessment 6 tests (5/5)
-│   ├── test_07_audit_log.py    # Assessment 7 tests (5/5)
+│   ├── test_07_audit_log.py    # Assessment 7 tests (6/6, dual-sink JSONL)
 │   ├── test_08_key_mgmt.py     # Assessment 8 tests (5/5)
 │   ├── test_09_stride.py       # Assessment 9 tests (6/6)
-│   └── test_10_sbom.py         # Assessment 10 tests (5/5)
+│   ├── test_10_sbom.py         # Assessment 10 tests (5/5)
+│   └── test_11_security_features.py # Security extensions (4/4: upload validation, FIM, logout-all, signed export)
 │
 └── vault/                      # Standalone VaultCTL CLI Tool
     └── vaultctl.py             # scrypt + AES-GCM file encryption utility

@@ -103,13 +103,24 @@ async def upload_document(
     db_path = request.app.state.db_path
     settings = request.app.state.settings
 
+    from app.file_security import FileSecurityError, validate_uploaded_file
+
     # Read plaintext
     content = await file.read()
-    if not content:
-        raise HTTPException(status_code=400, detail="Uploaded file is empty.")
+    try:
+        safe_filename = validate_uploaded_file(file.filename or "", content)
+    except FileSecurityError as e:
+        audit = AuditLogger(db_path=db_path)
+        audit.log(
+            event_type=EventType.DATA.value,
+            identity=user["username"],
+            action="FILE_UPLOAD_REJECTED",
+            result=AuditResult.DENIED.value,
+            detail=f"Security violation for filename '{file.filename}': {e}",
+        )
+        raise HTTPException(status_code=400, detail=str(e))
 
     doc_id = str(uuid.uuid4())
-    safe_filename = Path(file.filename or "uploaded_file.txt").name
 
     # 1. Sign plaintext with Ed25519
     sign_key_id = key_service.get_active_key(KeyPurpose.SIGNING).id

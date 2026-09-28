@@ -78,3 +78,25 @@ def test_session_expiry_and_invalidation(temp_db_path: str, audit_logger):
         conn.execute("UPDATE sessions SET expires_at = ? WHERE id = ?", (past_time, expired_session_id))
 
     assert validate_session(expired_session_id, db_path=temp_db_path) is None
+
+
+def test_session_fixation_defense_invalidates_prior(temp_db_path: str, audit_logger):
+    """Test 6: Creating a new session invalidates previous active sessions for the user."""
+    user_id = register_user(
+        "carol_session_test",
+        "carol_sess@campus.local",
+        "SecurePassword123!@",
+        role="faculty",
+        db_path=temp_db_path,
+        audit_logger=audit_logger,
+    )
+
+    first_session = create_session(user_id, db_path=temp_db_path)
+    assert validate_session(first_session, db_path=temp_db_path) is not None
+
+    # New login from user produces new session and deactivates first_session
+    second_session = create_session(user_id, db_path=temp_db_path)
+    assert second_session != first_session
+    assert validate_session(second_session, db_path=temp_db_path) is not None
+    # Previous session must now be invalidated
+    assert validate_session(first_session, db_path=temp_db_path) is None

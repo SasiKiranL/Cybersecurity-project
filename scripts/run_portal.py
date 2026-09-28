@@ -25,7 +25,8 @@ def main():
         port=settings.portal_port,
         ssl_keyfile=str(settings.server_key_path),
         ssl_certfile=str(settings.server_cert_path),
-        reload=False,
+        reload=True,
+        reload_dirs=[str(BASE_DIR / "app"), str(BASE_DIR / "audit"), str(BASE_DIR / "keyservice")],
     )
 
 

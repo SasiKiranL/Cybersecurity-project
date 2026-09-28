@@ -6,6 +6,7 @@ and verifying cryptographic continuity.
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Union
 
@@ -70,3 +71,48 @@ def verify_audit(db_path: Union[str, Path, None] = None) -> tuple[bool, list[str
         return len(errors) == 0, errors
     finally:
         conn.close()
+
+
+def verify_audit_jsonl(jsonl_path: Union[str, Path]) -> tuple[bool, list[str]]:
+    """Verify integrity of the audit chain stored in an append-only JSONL file."""
+    path = Path(jsonl_path)
+    if not path.exists():
+        return True, []
+
+    errors: list[str] = []
+    last_hash = GENESIS_HASH
+
+    with open(path, "r", encoding="utf-8") as f:
+        for line_num, line in enumerate(f, start=1):
+            line = line.strip()
+            if not line:
+                continue
+            rec = json.loads(line)
+            prev_hash = rec["prev_hash"]
+            rec_hash = rec["record_hash"]
+
+            if prev_hash != last_hash:
+                errors.append(
+                    f"JSONL chain break at line {line_num}: prev_hash '{prev_hash[:16]}...' "
+                    f"does not match expected '{last_hash[:16]}...'"
+                )
+
+            expected = compute_canonical_hash(
+                event_type=rec["event_type"],
+                timestamp=rec["timestamp"],
+                identity=rec["identity"],
+                action=rec["action"],
+                result=rec["result"],
+                detail=rec["detail"],
+                prev_hash=prev_hash,
+            )
+
+            if rec_hash != expected:
+                errors.append(
+                    f"JSONL hash tampering at line {line_num}: stored '{rec_hash[:16]}...' "
+                    f"!= computed '{expected[:16]}...'"
+                )
+
+            last_hash = rec_hash
+
+    return len(errors) == 0, errors

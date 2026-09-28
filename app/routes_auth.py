@@ -15,7 +15,12 @@ from app.auth import (
     login_user,
     register_user,
 )
-from app.session import create_session, terminate_session, validate_session
+from app.session import (
+    create_session,
+    terminate_all_user_sessions,
+    terminate_session,
+    validate_session,
+)
 
 router = APIRouter()
 
@@ -46,6 +51,37 @@ async def login_action(
 ):
     templates = request.app.state.templates
     db_path = request.app.state.db_path
+
+    # Defense-in-Depth: Rate limit login attempts per IP
+    limiter = getattr(request.app.state, "login_limiter", None)
+    if limiter is None:
+        from api.rate_limiter import SlidingWindowRateLimiter
+        limiter = SlidingWindowRateLimiter(max_requests=10, window_seconds=60)
+        request.app.state.login_limiter = limiter
+
+    client_ip = request.client.host if request.client else "127.0.0.1"
+    allowed, retry_after = limiter.is_allowed(client_ip)
+    if not allowed:
+        from audit.logger import AuditLogger
+        from audit.models import EventType, AuditResult
+        audit = AuditLogger(db_path=db_path)
+        audit.log(
+            event_type=EventType.SYSTEM.value,
+            identity=client_ip,
+            action="LOGIN_RATE_LIMIT_EXCEEDED",
+            result=AuditResult.DENIED.value,
+            detail=f"Login rate limit reached for {client_ip}. Retry-After: {retry_after}s",
+        )
+        return templates.TemplateResponse(
+            request=request,
+            name="login.html",
+            context={
+                "error": f"Too many login attempts from this network. Please wait {retry_after} seconds before trying again.",
+                "user": None,
+            },
+            status_code=429,
+            headers={"Retry-After": str(retry_after)},
+        )
 
     try:
         user_info = login_user(username, password, db_path=db_path)
@@ -200,6 +236,28 @@ async def logout_action(request: Request):
     session_id = request.cookies.get("cv_session")
     if session_id:
         terminate_session(session_id, db_path=request.app.state.db_path)
+    redirect = RedirectResponse(url="/login", status_code=303)
+    redirect.delete_cookie(key="cv_session")
+    return redirect
+
+
+@router.post("/logout-all")
+async def logout_all_action(request: Request):
+    db_path = request.app.state.db_path
+    session_id = request.cookies.get("cv_session")
+    user = validate_session(session_id, db_path=db_path)
+    if user:
+        from audit.logger import AuditLogger
+        from audit.models import EventType, AuditResult
+        terminate_all_user_sessions(user["user_id"], db_path=db_path)
+        audit = AuditLogger(db_path=db_path)
+        audit.log(
+            event_type=EventType.AUTH.value,
+            identity=user["username"],
+            action="LOGOUT_ALL_SESSIONS",
+            result=AuditResult.SUCCESS.value,
+            detail=f"Revoked all active sessions for user '{user['username']}'",
+        )
     redirect = RedirectResponse(url="/login", status_code=303)
     redirect.delete_cookie(key="cv_session")
     return redirect

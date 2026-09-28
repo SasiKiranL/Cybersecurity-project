@@ -29,6 +29,11 @@ def create_session(user_id: str, db_path: Union[str, Path, None] = None) -> str:
     now_iso = now.isoformat()
 
     with db_session(db_path) as conn:
+        # Session Fixation Defense: invalidate prior active sessions
+        conn.execute(
+            "UPDATE sessions SET is_active = 0 WHERE user_id = ? AND is_active = 1",
+            (user_id,),
+        )
         conn.execute(
             """
             INSERT INTO sessions (id, user_id, created_at, expires_at, is_active)
@@ -86,6 +91,18 @@ def terminate_session(session_id: str, db_path: Union[str, Path, None] = None) -
             "UPDATE sessions SET is_active = 0 WHERE id = ?",
             (session_id,),
         )
+
+
+def terminate_all_user_sessions(user_id: str, db_path: Union[str, Path, None] = None) -> int:
+    """Explicitly deactivate all active sessions for a user (sign out everywhere)."""
+    if not user_id:
+        return 0
+    with db_session(db_path) as conn:
+        cursor = conn.execute(
+            "UPDATE sessions SET is_active = 0 WHERE user_id = ? AND is_active = 1",
+            (user_id,),
+        )
+        return cursor.rowcount
 
 
 def generate_csrf_token(session_id: str, secret: str) -> str:

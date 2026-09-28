@@ -11,9 +11,10 @@ Verifies:
 from __future__ import annotations
 
 import sqlite3
+from pathlib import Path
 import pytest
 from audit.logger import AuditLogger
-from audit.verifier import verify_audit
+from audit.verifier import verify_audit, verify_audit_jsonl
 from audit.models import GENESIS_HASH
 
 
@@ -109,3 +110,26 @@ def test_audit_db_failure_resilience(tmp_path):
         detail="Simulated failure",
     )
     assert result is None
+
+
+def test_audit_jsonl_dual_sink_and_verification(temp_db_path: str, tmp_path: Path):
+    """Test 6: Dual-sink audit logging writes to append-only JSONL and passes verification."""
+    jsonl_file = tmp_path / "audit_archive.jsonl"
+    dual_logger = AuditLogger(db_path=temp_db_path, jsonl_path=jsonl_file)
+
+    for i in range(5):
+        dual_logger.log(
+            event_type="AUTH",
+            identity=f"user_{i}",
+            action="LOGIN_SUCCESS",
+            result="SUCCESS",
+            detail=f"Dual-sink verification record {i}",
+        )
+
+    assert jsonl_file.exists()
+    lines = [l for l in jsonl_file.read_text().splitlines() if l.strip()]
+    assert len(lines) == 5
+
+    is_valid, errors = verify_audit_jsonl(jsonl_file)
+    assert is_valid is True
+    assert len(errors) == 0

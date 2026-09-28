@@ -60,10 +60,20 @@ def compute_canonical_hash(
 
 
 class AuditLogger:
-    """Thread-safe, hash-chained audit logger."""
+    """Thread-safe, dual-sink hash-chained audit logger (SQLite + Append-Only JSONL)."""
 
-    def __init__(self, db_path: Union[str, Path, None] = None) -> None:
+    def __init__(
+        self,
+        db_path: Union[str, Path, None] = None,
+        jsonl_path: Union[str, Path, None] = None,
+    ) -> None:
         self.db_path = db_path
+        if jsonl_path is not None:
+            self.jsonl_path = Path(jsonl_path)
+        elif db_path and str(db_path) != ":memory:":
+            self.jsonl_path = Path(db_path).parent / "audit_log.jsonl"
+        else:
+            self.jsonl_path = None
         self._lock = threading.Lock()
 
     def log(
@@ -122,7 +132,7 @@ class AuditLogger:
                     )
                     inserted_id = cursor.lastrowid
 
-                    return AuditEvent(
+                    event = AuditEvent(
                         id=inserted_id,
                         event_type=event_type,
                         timestamp=timestamp,
@@ -133,6 +143,24 @@ class AuditLogger:
                         prev_hash=prev_hash,
                         record_hash=record_hash,
                     )
+
+                    # Off-database immutable audit log preservation (JSONL)
+                    if self.jsonl_path:
+                        try:
+                            self.jsonl_path.parent.mkdir(parents=True, exist_ok=True)
+                            if not self.jsonl_path.exists() or self.jsonl_path.stat().st_size == 0:
+                                cursor_all = conn.execute("SELECT * FROM audit_log ORDER BY id ASC")
+                                with open(self.jsonl_path, "w", encoding="utf-8") as jf:
+                                    for r in cursor_all.fetchall():
+                                        ev = AuditEvent(**dict(r))
+                                        jf.write(json.dumps(ev.model_dump()) + "\n")
+                            else:
+                                with open(self.jsonl_path, "a", encoding="utf-8") as jf:
+                                    jf.write(json.dumps(event.model_dump()) + "\n")
+                        except Exception as je:
+                            print(f"[AUDIT WARNING] Failed to append JSONL audit log: {je}", file=sys.stderr)
+
+                    return event
             except Exception as e:
                 # Log-write failure: warn to stderr, never crash application
                 print(f"[AUDIT WARNING] Failed to write audit log: {e}", file=sys.stderr)

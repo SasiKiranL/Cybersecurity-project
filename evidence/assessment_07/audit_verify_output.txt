@@ -1,4 +1,5 @@
 [*] Verifying audit log integrity in 'data\campusvault.db'...
-[*] Found 10 total audit records in chain.
-[+] VERIFICATION SUCCESS: All cryptographic hashes and chain links are valid!
-[+] The audit log is completely tamper-free across all 10 records.
+[*] Found 28 total audit records in chain.
+[*] Verified append-only JSONL archive at 'data\audit_log.jsonl' (Valid).
+[+] VERIFICATION SUCCESS: All cryptographic hashes and chain links are valid across DB and JSONL!
+[+] The audit log is completely tamper-free across all 28 records.

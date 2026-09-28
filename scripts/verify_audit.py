@@ -18,7 +18,7 @@ if str(BASE_DIR) not in sys.path:
 
 from app.config import get_settings
 from app.database import get_db_connection
-from audit.verifier import verify_audit
+from audit.verifier import verify_audit, verify_audit_jsonl
 
 
 def main() -> None:
@@ -41,13 +41,21 @@ def main() -> None:
 
     is_valid, errors = verify_audit(db_path)
 
-    if is_valid:
-        print("[+] VERIFICATION SUCCESS: All cryptographic hashes and chain links are valid!")
+    jsonl_path = db_path.parent / "audit_log.jsonl"
+    jsonl_valid = True
+    jsonl_errors: list[str] = []
+    if jsonl_path.exists():
+        jsonl_valid, jsonl_errors = verify_audit_jsonl(jsonl_path)
+        print(f"[*] Verified append-only JSONL archive at '{jsonl_path}' ({'Valid' if jsonl_valid else 'Tampered'}).")
+
+    if is_valid and jsonl_valid:
+        print("[+] VERIFICATION SUCCESS: All cryptographic hashes and chain links are valid across DB and JSONL!")
         print(f"[+] The audit log is completely tamper-free across all {count} records.")
         sys.exit(0)
     else:
         print("[-] VERIFICATION FAILURE: Tampering detected!", file=sys.stderr)
-        for err in errors:
+        all_errs = errors + jsonl_errors
+        for err in all_errs:
             print(f"    [!] {err}", file=sys.stderr)
         sys.exit(2)
 
