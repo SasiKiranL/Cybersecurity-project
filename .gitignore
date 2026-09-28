@@ -5,3 +5,6 @@ data/
 pki/*.key
 pki/private/
 __pycache__/
+*.pyc
+.pytest_cache/
+*.log
